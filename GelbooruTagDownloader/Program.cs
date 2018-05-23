@@ -37,7 +37,10 @@ namespace GelbooruTagDownloader
                     {
                         if (s == "")
                             continue;
-                        var tag = allTags[GetTagId(s)];
+                        int? tagVal = GetTagId(s);
+                        if (tagVal == null)
+                            continue;
+                        var tag = allTags[tagVal.Value];
                         if (tag == null)
                             Console.WriteLine("Invalid tag: " + s + ", value: " + GetTagId(s));
                         else
@@ -66,11 +69,13 @@ namespace GelbooruTagDownloader
             }
         }
 
-        private static int GetTagId(string tag)
+        private static int? GetTagId(string tag)
         {
             using (WebClient wc = new WebClient())
             {
-                return (Convert.ToInt32(GetElementJson("<tag type=\"",  wc.DownloadString("https://gelbooru.com/index.php?page=dapi&s=tag&q=index&name=" + tag), '"')[0] - '0'));
+                if (GetElementJson("name=\"", wc.DownloadString("https://gelbooru.com/index.php?page=dapi&s=tag&q=index&name=" + tag), '"') == tag)
+                    return (Convert.ToInt32(GetElementJson("<tag type=\"",  wc.DownloadString("https://gelbooru.com/index.php?page=dapi&s=tag&q=index&name=" + tag), '"')[0] - '0'));
+                return (null);
             }
         }
 
