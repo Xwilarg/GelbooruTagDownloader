@@ -9,6 +9,9 @@ namespace GelbooruTagDownloader
     class Program
     {
         static readonly string folderName = "Saves\\";
+        static readonly int startId = 0;
+        static readonly string searchLink = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=1&pid=";
+        static readonly string tagLink = "https://gelbooru.com/index.php?page=dapi&s=tag&q=index&name=";
 
         static void Main(string[] args)
         {
@@ -24,13 +27,13 @@ namespace GelbooruTagDownloader
             };
             Console.WriteLine("Informations will be saved in " + Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + folderName);
             Console.Write("Images analysed: 0");
-            int id = 0;
+            int id = startId;
             using (WebClient wc = new WebClient())
             {
                 string html;
                 while (true)
                 {
-                    html = wc.DownloadString("https://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=1&pid=" + id);
+                    html = wc.DownloadString(searchLink + id);
                     html = GetElementJson("tags=\"", html, '"');
                     string[] tags = html.Split(' ');
                     foreach (string s in tags)
@@ -73,8 +76,9 @@ namespace GelbooruTagDownloader
         {
             using (WebClient wc = new WebClient())
             {
-                if (GetElementJson("name=\"", wc.DownloadString("https://gelbooru.com/index.php?page=dapi&s=tag&q=index&name=" + tag), '"') == tag)
-                    return (Convert.ToInt32(GetElementJson("<tag type=\"",  wc.DownloadString("https://gelbooru.com/index.php?page=dapi&s=tag&q=index&name=" + tag), '"')[0] - '0'));
+                string tagStr = wc.DownloadString(tagLink + tag);
+                if (GetElementJson("name=\"", tagStr, '"') == tag)
+                    return (Convert.ToInt32(GetElementJson("<tag type=\"",  tagStr, '"')[0] - '0'));
                 return (null);
             }
         }
